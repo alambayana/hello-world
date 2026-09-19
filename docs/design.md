@@ -134,3 +134,34 @@ Consequences:
 | whitespace-only is a real name | `whitespace_only_arg_is_a_real_name` (unit), verbatim table (unit) |
 | invalid UTF-8 → `there`, exit 0, all-or-nothing | `invalid_utf8_argument_greets_there`, `mixed_invalid_and_valid_arguments_greet_there` (int), `any_invalid_utf8_arg_fails_the_batch_to_empty_name` (unit) |
 | verbatim / no truncation | `name_is_embedded_verbatim_for_a_variety_of_inputs` (unit, byte-length check), `unicode_argument_is_greeted_exactly`, `long_argument_is_not_truncated` (int) |
+
+## Known limitation: the integration tests are Unix-only in CI
+
+On GitHub's `windows-latest` runners (observed 2026-09-19, `rustc 1.98.1`
+stable, `x86_64-pc-windows-msvc`), any test running on a **libtest worker
+thread** that calls `std::process::Command` dies with
+`STATUS_STACK_OVERFLOW` (0xc00000fd) — even for a test that passes zero
+arguments and even though:
+
+* the same binary run directly (or by `cargo run`) works on that runner;
+* a plain `std::thread::spawn` calling `Command` works, with or without
+  `RUST_MIN_STACK`;
+* every unit test passes on Windows (they never spawn a process);
+* the failure is independent of stack size (`RUST_MIN_STACK` up to 32 MiB
+  was set and confirmed in effect), build profile (debug and release both
+  fail), test runner (`cargo test` and `cargo nextest` — fresh process per
+  test — both fail), execution mode (serial and parallel), and capture
+  mode (`--no-capture` included);
+* the project's argument handling contains no recursion; the crashing
+  tests exercise the simplest possible inputs.
+
+Conclusion: a harness/environment bug in the toolchain's test harness on
+that platform, not a project bug. `tests/cli.rs` is therefore gated
+`#![cfg(unix)]` so the Windows CI job runs the unit tests (which pin the
+entire parsing contract), plus `cargo fmt`, `cargo clippy --all-targets`
+(which compiles and lints *every* target on all platforms — this caught a
+real Windows-only unused-import bug before any test ran), and rustdoc.
+The integration tests should be re-enabled for Windows by removing the
+gate once the toolchain is fixed upstream. The full investigation trail
+is in the git history of `.github/workflows/ci.yml` and this repository's
+commit messages (2026-09-19).
