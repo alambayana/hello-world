@@ -5,7 +5,6 @@
 //! exit status, and the raw UTF-8 bytes on stdout).
 
 use std::ffi::OsString;
-use std::process::Command;
 
 /// Runs the compiled `hello-world` binary with the given arguments and
 /// returns its full stdout. Panics if the binary fails to execute or exits
@@ -19,6 +18,8 @@ fn run(args: &[&str]) -> String {
 /// is not valid UTF-8 (only possible on Unix).
 #[cfg(unix)]
 fn run_os(args: &[OsString]) -> String {
+    use std::process::Command;
+
     let output = Command::new(env!("CARGO_BIN_EXE_hello-world"))
         .args(args)
         .output()
