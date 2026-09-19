@@ -63,7 +63,9 @@ jobs:
 
       - name: Windows diagnostic — cargo nextest (process per test)
         if: matrix.os == 'windows-latest'
-        uses: taiki-e/nextest-action@v2
+        run: |
+          cargo install cargo-nextest --locked
+          cargo nextest run
 
       - name: Tests
         if: matrix.os != 'windows-latest'
