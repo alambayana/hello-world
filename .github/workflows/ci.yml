@@ -7,6 +7,11 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # Windows test threads run on the platform-default 1 MB stack, which
+  # debug builds that spawn child processes overflow (STATUS_STACK_OVERFLOW).
+  # Raise the default thread stack for the test harness; harmless on other
+  # platforms (their defaults are already large, threads commit lazily).
+  RUST_MIN_STACK: "33554432"
 
 jobs:
   check:
