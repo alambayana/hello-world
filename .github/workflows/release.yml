@@ -62,12 +62,18 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Name each asset with the actual target triple so the Linux,
-          # macOS, and Windows binaries never collide in the asset list.
+          # Cargo names the built binary just `hello-world[.exe]`; copy it
+          # to a target-triple-suffixed name so the Linux, macOS, and
+          # Windows assets are distinct in the release asset list.
           target="$(rustc -vV | awk '/^host:/{print $2}')"
+          src="target/release/hello-world"
           bin="hello-world-${target}"
           case "$target" in
-            *windows*) bin="${bin}.exe" ;;
+            *windows*)
+              src="${src}.exe"
+              bin="${bin}.exe"
+              ;;
           esac
+          cp "$src" "target/release/${bin}"
           gh release upload "$GITHUB_REF_NAME" "target/release/${bin}" --clobber
           echo "Uploaded ${bin}"
