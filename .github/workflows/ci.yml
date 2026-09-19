@@ -40,6 +40,13 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Tests
+        if: matrix.os == 'windows-latest'
+        run: cargo test --release -- --test-threads=1 --no-capture
+        env:
+          RUST_BACKTRACE: 1
+
+      - name: Tests
+        if: matrix.os != 'windows-latest'
         run: cargo test
 
       - name: Documentation
