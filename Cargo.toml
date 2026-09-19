@@ -2,5 +2,6 @@
 name = "hello-world"
 version = "0.1.0"
 edition = "2024"
+description = "Greets a name given as a CLI argument, or 'world' when no argument is given."
 
 [dependencies]
