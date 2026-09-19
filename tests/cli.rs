@@ -23,7 +23,11 @@ fn run_os(args: &[OsString]) -> String {
         .args(args)
         .output()
         .expect("failed to execute hello-world binary");
-    assert!(output.status.success(), "binary exited with {:?}", output.status);
+    assert!(
+        output.status.success(),
+        "binary exited with {:?}",
+        output.status
+    );
     String::from_utf8(output.stdout).expect("stdout was not valid UTF-8")
 }
 
@@ -31,7 +35,10 @@ fn run_os(args: &[OsString]) -> String {
 /// fall back to the plain helper.
 #[cfg(not(unix))]
 fn run_os(args: &[OsString]) -> String {
-    let lossy: Vec<String> = args.iter().map(|a| a.to_string_lossy().into_owned()).collect();
+    let lossy: Vec<String> = args
+        .iter()
+        .map(|a| a.to_string_lossy().into_owned())
+        .collect();
     let refs: Vec<&str> = lossy.iter().map(String::as_str).collect();
     run(&refs)
 }
@@ -95,7 +102,10 @@ fn mixed_invalid_and_valid_arguments_greet_there() {
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt;
     let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
-    assert_eq!(run_os(&[invalid, OsString::from("Rust")]), "Hello, there!\n");
+    assert_eq!(
+        run_os(&[invalid, OsString::from("Rust")]),
+        "Hello, there!\n"
+    );
 }
 
 /// Mixed scripts, accents, and emoji survive the full trip through the real

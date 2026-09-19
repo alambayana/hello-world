@@ -1,5 +1,7 @@
 # hello-world
 
+[![CI](https://github.com/alambayana/hello-world/actions/workflows/ci.yml/badge.svg)](https://github.com/alambayana/hello-world/actions/workflows/ci.yml)
+
 A tiny command-line greeting tool in Rust. It says hello to whatever name you
 give it — and behaves exactly the same way for every weird name you can
 think of.

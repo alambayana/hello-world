@@ -55,7 +55,11 @@ fn name_from_args(args: &[std::ffi::OsString]) -> Option<String> {
         Ok(args) => args,
         Err(_) => return Some(String::new()),
     };
-    let non_empty: Vec<&str> = args.iter().filter(|a| !a.is_empty()).map(String::as_str).collect();
+    let non_empty: Vec<&str> = args
+        .iter()
+        .filter(|a| !a.is_empty())
+        .map(String::as_str)
+        .collect();
     Some(non_empty.join(" "))
 }
 
@@ -96,10 +100,7 @@ mod tests {
     /// Names with spaces are preserved in the greeting.
     #[test]
     fn greets_multi_word_names() {
-        assert_eq!(
-            greeting(Some("Rust is great")),
-            "Hello, Rust is great!"
-        );
+        assert_eq!(greeting(Some("Rust is great")), "Hello, Rust is great!");
     }
 
     /// The name is embedded verbatim for a wide range of inputs: accented
@@ -113,24 +114,24 @@ mod tests {
     #[test]
     fn name_is_embedded_verbatim_for_a_variety_of_inputs() {
         let mut names: Vec<String> = vec![
-            "José".into(),        // accented Latin
-            "Zoë Müller".into(),  // diaeresis, umlaut
-            "世界".into(),          // CJK ideographs
-            "こんにちは".into(),     // Japanese kana
-            "Ελληνικά".into(),    // Greek
-            "мир".into(),          // Cyrillic
-            "عالم".into(),          // Arabic (right-to-left)
-            "עולם".into(),          // Hebrew (right-to-left)
-            "🦀".into(),           // single emoji
-            "👋🏽".into(),          // emoji + skin-tone modifier
-            "👨‍👩‍👧‍👦".into(),      // ZWJ emoji sequence (family)
-            "e\u{0301}".into(),     // e + combining acute (not precomposed)
-            "a\u{200B}b".into(),    // zero-width space
-            "José\u{A0}S".into(),   // no-break space
-            "A\nB".into(),          // embedded newline
+            "José".into(),                // accented Latin
+            "Zoë Müller".into(),          // diaeresis, umlaut
+            "世界".into(),                // CJK ideographs
+            "こんにちは".into(),          // Japanese kana
+            "Ελληνικά".into(),            // Greek
+            "мир".into(),                 // Cyrillic
+            "عالم".into(),                // Arabic (right-to-left)
+            "עולם".into(),                // Hebrew (right-to-left)
+            "🦀".into(),                  // single emoji
+            "👋🏽".into(),                  // emoji + skin-tone modifier
+            "👨‍👩‍👧‍👦".into(),                  // ZWJ emoji sequence (family)
+            "e\u{0301}".into(),           // e + combining acute (not precomposed)
+            "a\u{200B}b".into(),          // zero-width space
+            "José\u{A0}S".into(),         // no-break space
+            "A\nB".into(),                // embedded newline
             "\"quoted\" & {name}".into(), // format-string metacharacters
-            "!!!".into(),           // punctuation matching the suffix
-            "   ".into(),           // whitespace-only (NOT empty — still a name)
+            "!!!".into(),                 // punctuation matching the suffix
+            "   ".into(),                 // whitespace-only (NOT empty — still a name)
         ];
         names.push("x".repeat(10_000)); // very long name
 
@@ -158,7 +159,10 @@ mod tests {
     /// A single argument is used as-is.
     #[test]
     fn single_arg_is_used_verbatim() {
-        assert_eq!(name_from_args(&args(&["Alambayana"])), Some("Alambayana".into()));
+        assert_eq!(
+            name_from_args(&args(&["Alambayana"])),
+            Some("Alambayana".into())
+        );
     }
 
     /// Multiple arguments are joined with a single space.
@@ -203,8 +207,14 @@ mod tests {
         let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
         let good = OsString::from("Rust");
         // Invalid alone, first, or last — always an empty (but present) name.
-        assert_eq!(name_from_args(std::slice::from_ref(&invalid)), Some(String::new()));
-        assert_eq!(name_from_args(&[invalid.clone(), good.clone()]), Some(String::new()));
+        assert_eq!(
+            name_from_args(std::slice::from_ref(&invalid)),
+            Some(String::new())
+        );
+        assert_eq!(
+            name_from_args(&[invalid.clone(), good.clone()]),
+            Some(String::new())
+        );
         assert_eq!(name_from_args(&[good, invalid]), Some(String::new()));
     }
 }
