@@ -5,58 +5,85 @@
 //! hello-world                    -> "Hello, world!"
 //! hello-world <name>             -> "Hello, <name>!"
 //! hello-world <word> <word> ...  -> "Hello, <word> <word> ...!"
+//! hello-world ""                 -> "Hello, there!"
 //! ```
 //!
-//! All arguments are joined with a single space, so unquoted multi-word
-//! names work the same as quoted ones: `hello-world Devajyoti Sarkar` and
-//! `hello-world "Devajyoti Sarkar"` produce identical output.
-//! The name is embedded **verbatim** — the program performs no escaping,
-//! normalization, or truncation, and outputs valid UTF-8 as long as the
-//! input argument is.
-//!
-//! Note: like all `std::env::args()`-based programs, an argument that is
-//! not valid UTF-8 (possible on Unix) is silently skipped, so the program
-//! falls back to the default greeting in that case.
+//! Behaviour contract:
+//! * All arguments are joined with a single space, so unquoted multi-word
+//!   names work the same as quoted ones: `hello-world Devajyoti Sarkar` and
+//!   `hello-world "Devajyoti Sarkar"` produce identical output.
+//! * Empty-string arguments are ignored; if the remaining name is empty
+//!   (i.e. only empty arguments were given), the greeting is "Hello, there!".
+//! * If *any* argument is not valid UTF-8 (only possible on Unix), the
+//!   invocation is treated as if no arguments were given — the program
+//!   prints "Hello, world!" and exits successfully.
+//! * The name is embedded **verbatim** — no escaping, normalization, or
+//!   truncation.
 
 /// Builds the greeting for the given name.
 ///
-/// Returns the default greeting when `name` is `None`, otherwise greets the
-/// supplied name verbatim. The logic lives in its own function (rather than
-/// inline in `main`) so it can be unit-tested without spawning a process.
+/// * `None` — no usable name → default "Hello, world!"
+/// * `Some("")` — a name was given but is empty → "Hello, there!"
+/// * `Some(name)` — greets the supplied name verbatim.
 ///
-/// # Arguments
-///
-/// * `name` — the name to greet, or `None` to fall back to "world".
+/// The logic lives in its own function (rather than inline in `main`) so it
+/// can be unit-tested without spawning a process.
 fn greeting(name: Option<&str>) -> String {
     match name {
+        Some("") => "Hello, there!".to_string(),
         Some(name) => format!("Hello, {name}!"),
         None => "Hello, world!".to_string(),
     }
 }
 
-/// Entry point: collects all CLI arguments, joins them with a single space,
-/// and prints the greeting.
+/// Resolves the raw CLI arguments into the name to greet.
 ///
-/// Uses `args_os()` rather than `args()` so that a non-UTF-8 argument (only
-/// possible on Unix) is treated as "no argument" instead of panicking —
-/// recent Rust versions panic in `env::args()` when handed invalid UTF-8.
+/// * No arguments → `None`.
+/// * Any argument that is not valid UTF-8 → `None` (treat as no arguments;
+///   a partially broken name is not greeted).
+/// * Otherwise → all non-empty arguments joined with a single space (which
+///   is `Some("")` when only empty arguments were given).
+fn name_from_args(args: &[std::ffi::OsString]) -> Option<String> {
+    if args.is_empty() {
+        return None;
+    }
+    // Lossless UTF-8 conversion: if any argument fails, fail the whole batch.
+    // `into_string` consumes its input, so clone each argument first.
+    let args: Vec<String> = args
+        .iter()
+        .map(|a| a.clone().into_string())
+        .collect::<Result<_, _>>()
+        .ok()?;
+    let non_empty: Vec<&str> = args.iter().filter(|a| !a.is_empty()).map(String::as_str).collect();
+    Some(non_empty.join(" "))
+}
+
+/// Entry point: resolves the CLI arguments into a name and prints the greeting.
 fn main() {
-    let args: Vec<String> = std::env::args_os()
-        .skip(1)
-        .filter_map(|arg| arg.into_string().ok())
-        .collect();
-    let name = (!args.is_empty()).then(|| args.join(" "));
+    let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
+    let name = name_from_args(&args);
     println!("{}", greeting(name.as_deref()));
 }
 
 #[cfg(test)]
 mod tests {
-    use super::greeting;
+    use super::{greeting, name_from_args};
+    use std::ffi::OsString;
 
-    /// No argument means the default "world" greeting.
+    // ---------------------------------------------------------------------
+    // greeting()
+    // ---------------------------------------------------------------------
+
+    /// No usable name means the default "world" greeting.
     #[test]
     fn greets_world_when_no_name_is_given() {
         assert_eq!(greeting(None), "Hello, world!");
+    }
+
+    /// A name was given but is empty → "Hello, there!".
+    #[test]
+    fn greets_there_when_the_name_is_empty() {
+        assert_eq!(greeting(Some("")), "Hello, there!");
     }
 
     /// A single name is greeted as-is.
@@ -78,7 +105,7 @@ mod tests {
     /// Latin, CJK, right-to-left scripts, emoji (including ZWJ sequences and
     /// skin-tone modifiers), combining marks, zero-width and non-breaking
     /// spaces, newlines, format-string metacharacters, and degenerate names
-    /// (empty, whitespace-only, very long).
+    /// (whitespace-only, very long).
     ///
     /// The byte-length check proves there is no truncation: the output must
     /// be exactly `Hello, ` + the name's bytes + `!`.
@@ -102,8 +129,7 @@ mod tests {
             "A\nB".into(),          // embedded newline
             "\"quoted\" & {name}".into(), // format-string metacharacters
             "!!!".into(),           // punctuation matching the suffix
-            "   ".into(),           // whitespace-only
-            "".into(),              // empty name
+            "   ".into(),           // whitespace-only (NOT empty — still a name)
         ];
         names.push("x".repeat(10_000)); // very long name
 
@@ -114,10 +140,68 @@ mod tests {
         }
     }
 
-    /// The default greeting must be byte-for-byte the documented string.
+    // ---------------------------------------------------------------------
+    // name_from_args()
+    // ---------------------------------------------------------------------
+
+    fn args(names: &[&str]) -> Vec<OsString> {
+        names.iter().map(OsString::from).collect()
+    }
+
+    /// No arguments → no name.
     #[test]
-    fn default_greeting_is_exactly_documented() {
-        assert_eq!(greeting(None), "Hello, world!");
-        assert_eq!(greeting(None).len(), 13);
+    fn no_args_yields_none() {
+        assert_eq!(name_from_args(&[]), None);
+    }
+
+    /// A single argument is used as-is.
+    #[test]
+    fn single_arg_is_used_verbatim() {
+        assert_eq!(name_from_args(&args(&["Devajyoti"])), Some("Devajyoti".into()));
+    }
+
+    /// Multiple arguments are joined with a single space.
+    #[test]
+    fn args_are_joined_with_single_spaces() {
+        assert_eq!(
+            name_from_args(&args(&["Devajyoti", "Sarkar"])),
+            Some("Devajyoti Sarkar".into())
+        );
+    }
+
+    /// Empty-string arguments are dropped wherever they appear.
+    #[test]
+    fn empty_args_are_ignored_among_others() {
+        assert_eq!(
+            name_from_args(&args(&["", "Rust", "", "is", "great", ""])),
+            Some("Rust is great".into())
+        );
+    }
+
+    /// Only empty arguments → an empty (but present) name, which `greeting`
+    /// turns into "Hello, there!".
+    #[test]
+    fn only_empty_args_yield_an_empty_name() {
+        assert_eq!(name_from_args(&args(&["", ""])), Some(String::new()));
+    }
+
+    /// A whitespace-only argument is NOT empty — it is a real (odd) name.
+    #[test]
+    fn whitespace_only_arg_is_a_real_name() {
+        assert_eq!(name_from_args(&args(&[" "])), Some(" ".into()));
+    }
+
+    /// Any non-UTF-8 argument fails the whole batch (Unix-only input).
+    #[test]
+    #[cfg(unix)]
+    fn any_invalid_utf8_arg_fails_the_batch() {
+        use std::ffi::OsStr;
+        use std::os::unix::ffi::OsStrExt;
+        let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
+        let good = OsString::from("Rust");
+        // Invalid alone, first, or last — always None.
+        assert_eq!(name_from_args(std::slice::from_ref(&invalid)), None);
+        assert_eq!(name_from_args(&[invalid.clone(), good.clone()]), None);
+        assert_eq!(name_from_args(&[good, invalid]), None);
     }
 }

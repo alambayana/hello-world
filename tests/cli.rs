@@ -64,10 +64,37 @@ fn quoted_and_unquoted_multi_word_names_match() {
     assert_eq!(quoted, "Hello, Devajyoti Sarkar!\n");
 }
 
-/// Joining collapses to a single space between each argument.
+/// A lone empty argument yields the "there" greeting.
 #[test]
-fn single_empty_argument_still_greets_with_empty_name() {
-    assert_eq!(run(&[""]), "Hello, !\n");
+fn single_empty_argument_greets_there() {
+    assert_eq!(run(&[""]), "Hello, there!\n");
+}
+
+/// Empty-string arguments are ignored wherever they appear, and the rest
+/// are joined normally.
+#[test]
+fn empty_arguments_are_ignored_among_valid_ones() {
+    assert_eq!(
+        run(&["", "Rust", "", "is", "great", ""]),
+        "Hello, Rust is great!\n"
+    );
+}
+
+/// Only empty arguments → "there", regardless of how many there are.
+#[test]
+fn only_empty_arguments_greet_there() {
+    assert_eq!(run(&["", "", ""]), "Hello, there!\n");
+}
+
+/// Any non-UTF-8 argument fails the whole batch, even if other arguments
+/// are perfectly valid: the program behaves as if no arguments were given.
+#[test]
+#[cfg(unix)]
+fn mixed_invalid_and_valid_arguments_fall_back_to_default() {
+    use std::ffi::OsStr;
+    use std::os::unix::ffi::OsStrExt;
+    let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
+    assert_eq!(run_os(&[invalid, OsString::from("Rust")]), "Hello, world!\n");
 }
 
 /// Mixed scripts, accents, and emoji survive the full trip through the real
