@@ -39,16 +39,30 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Windows diagnostic — toolchain & OS info
+      - name: Windows diagnostic — Command-in-spawned-thread probe
         if: matrix.os == 'windows-latest'
         run: |
-          rustc -vV
-          echo "=== child binary alone ==="
-          cargo run --release -- Rust is great
-          echo "child exit: $LASTEXITCODE"
-          echo "=== single integration test alone ==="
-          cargo test --release --test cli no_argument_greets_world -- --exact --no-capture
-          echo "single-test exit: $LASTEXITCODE"
+          Set-Content -Path probe.rs -Value @'
+          use std::process::Command;
+          fn main() {
+              let h = std::thread::spawn(|| {
+                  let out = Command::new("cmd")
+                      .args(["/C", "echo hi"])
+                      .output()
+                      .expect("spawn failed");
+                  println!("probe got: {}", String::from_utf8_lossy(&out.stdout).trim());
+              });
+              h.join().expect("thread join failed");
+          }
+          '@
+          rustc probe.rs
+          echo "=== probe WITH RUST_MIN_STACK=$env:RUST_MIN_STACK ==="
+          ./probe.exe
+          echo "probe exit (with env): $LASTEXITCODE"
+          Remove-Item Env:RUST_MIN_STACK
+          echo "=== probe WITHOUT RUST_MIN_STACK ==="
+          ./probe.exe
+          echo "probe exit (no env): $LASTEXITCODE"
         env:
           RUST_BACKTRACE: full
 
