@@ -14,15 +14,15 @@
 //!   `hello-world "Devajyoti Sarkar"` produce identical output.
 //! * Empty-string arguments are ignored; if the remaining name is empty
 //!   (i.e. only empty arguments were given), the greeting is "Hello, there!".
-//! * If *any* argument is not valid UTF-8 (only possible on Unix), the
-//!   invocation is treated as if no arguments were given — the program
-//!   prints "Hello, world!" and exits successfully.
+//! * If *any* argument is not valid UTF-8 (only possible on Unix), nothing
+//!   usable is left to greet, so the program prints "Hello, there!" (the
+//!   user *did* try to give a name) and exits successfully.
 //! * The name is embedded **verbatim** — no escaping, normalization, or
 //!   truncation.
 
 /// Builds the greeting for the given name.
 ///
-/// * `None` — no usable name → default "Hello, world!"
+/// * `None` — no arguments were given at all → default "Hello, world!"
 /// * `Some("")` — a name was given but is empty → "Hello, there!"
 /// * `Some(name)` — greets the supplied name verbatim.
 ///
@@ -38,22 +38,23 @@ fn greeting(name: Option<&str>) -> String {
 
 /// Resolves the raw CLI arguments into the name to greet.
 ///
-/// * No arguments → `None`.
-/// * Any argument that is not valid UTF-8 → `None` (treat as no arguments;
-///   a partially broken name is not greeted).
+/// * No arguments → `None` (nothing was given at all → "Hello, world!").
+/// * Any argument that is not valid UTF-8 → `Some("")` (something *was*
+///   given, but nothing usable → "Hello, there!"). A partially broken name
+///   is never half-greeted: one failure fails the whole batch.
 /// * Otherwise → all non-empty arguments joined with a single space (which
 ///   is `Some("")` when only empty arguments were given).
 fn name_from_args(args: &[std::ffi::OsString]) -> Option<String> {
     if args.is_empty() {
         return None;
     }
-    // Lossless UTF-8 conversion: if any argument fails, fail the whole batch.
-    // `into_string` consumes its input, so clone each argument first.
-    let args: Vec<String> = args
-        .iter()
-        .map(|a| a.clone().into_string())
-        .collect::<Result<_, _>>()
-        .ok()?;
+    // Lossless UTF-8 conversion: if any argument fails, fail the whole batch
+    // and fall back to the empty name ("Hello, there!"). `into_string`
+    // consumes its input, so clone each argument first.
+    let args: Vec<String> = match args.iter().map(|a| a.clone().into_string()).collect() {
+        Ok(args) => args,
+        Err(_) => return Some(String::new()),
+    };
     let non_empty: Vec<&str> = args.iter().filter(|a| !a.is_empty()).map(String::as_str).collect();
     Some(non_empty.join(" "))
 }
@@ -191,17 +192,19 @@ mod tests {
         assert_eq!(name_from_args(&args(&[" "])), Some(" ".into()));
     }
 
-    /// Any non-UTF-8 argument fails the whole batch (Unix-only input).
+    /// Any non-UTF-8 argument fails the whole batch (Unix-only input). The
+    /// user still *gave* input, so the result is an empty name ("Hello,
+    /// there!") rather than None ("Hello, world!").
     #[test]
     #[cfg(unix)]
-    fn any_invalid_utf8_arg_fails_the_batch() {
+    fn any_invalid_utf8_arg_fails_the_batch_to_empty_name() {
         use std::ffi::OsStr;
         use std::os::unix::ffi::OsStrExt;
         let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
         let good = OsString::from("Rust");
-        // Invalid alone, first, or last — always None.
-        assert_eq!(name_from_args(std::slice::from_ref(&invalid)), None);
-        assert_eq!(name_from_args(&[invalid.clone(), good.clone()]), None);
-        assert_eq!(name_from_args(&[good, invalid]), None);
+        // Invalid alone, first, or last — always an empty (but present) name.
+        assert_eq!(name_from_args(std::slice::from_ref(&invalid)), Some(String::new()));
+        assert_eq!(name_from_args(&[invalid.clone(), good.clone()]), Some(String::new()));
+        assert_eq!(name_from_args(&[good, invalid]), Some(String::new()));
     }
 }

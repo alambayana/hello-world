@@ -87,14 +87,15 @@ fn only_empty_arguments_greet_there() {
 }
 
 /// Any non-UTF-8 argument fails the whole batch, even if other arguments
-/// are perfectly valid: the program behaves as if no arguments were given.
+/// are perfectly valid: a partially broken name is never half-greeted, so
+/// the program says "Hello, there!".
 #[test]
 #[cfg(unix)]
-fn mixed_invalid_and_valid_arguments_fall_back_to_default() {
+fn mixed_invalid_and_valid_arguments_greet_there() {
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt;
     let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
-    assert_eq!(run_os(&[invalid, OsString::from("Rust")]), "Hello, world!\n");
+    assert_eq!(run_os(&[invalid, OsString::from("Rust")]), "Hello, there!\n");
 }
 
 /// Mixed scripts, accents, and emoji survive the full trip through the real
@@ -113,14 +114,14 @@ fn long_argument_is_not_truncated() {
     assert_eq!(run(&[&name]), expected);
 }
 
-/// A non-UTF-8 first argument (Unix-only input) is silently skipped by
-/// `std::env::args()`, so the program falls back to the default greeting
-/// and still exits successfully.
+/// A non-UTF-8 argument (Unix-only input) leaves nothing usable to greet,
+/// so the program says "Hello, there!" and exits successfully — the user
+/// did try to give a name.
 #[test]
 #[cfg(unix)]
-fn invalid_utf8_argument_falls_back_to_default() {
+fn invalid_utf8_argument_greets_there() {
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt;
     let invalid = OsString::from(OsStr::from_bytes(&[0xFF, 0xFE, 0x41]));
-    assert_eq!(run_os(&[invalid]), "Hello, world!\n");
+    assert_eq!(run_os(&[invalid]), "Hello, there!\n");
 }
