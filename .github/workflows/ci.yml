@@ -46,4 +46,8 @@ jobs:
         run: cargo test
 
       - name: Documentation
-        run: RUSTDOCFLAGS="-D warnings" cargo doc --no-deps
+        # Inline "VAR=value command" is bash syntax and breaks on the
+        # PowerShell runner; use the step env instead (cross-platform).
+        run: cargo doc --no-deps
+        env:
+          RUSTDOCFLAGS: -D warnings
