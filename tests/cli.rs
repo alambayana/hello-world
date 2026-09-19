@@ -48,10 +48,26 @@ fn first_argument_is_greeted() {
     assert_eq!(run(&["Rust"]), "Hello, Rust!\n");
 }
 
-/// Arguments beyond the first are ignored.
+/// Multiple arguments are joined with a single space.
 #[test]
-fn extra_arguments_are_ignored() {
-    assert_eq!(run(&["Rust", "is", "great"]), "Hello, Rust!\n");
+fn extra_arguments_are_joined_with_spaces() {
+    assert_eq!(run(&["Rust", "is", "great"]), "Hello, Rust is great!\n");
+}
+
+/// Unquoted multi-word input produces the same output as quoted input —
+/// the whole point of the join behaviour.
+#[test]
+fn quoted_and_unquoted_multi_word_names_match() {
+    let quoted = run(&["Devajyoti Sarkar"]);
+    let unquoted = run(&["Devajyoti", "Sarkar"]);
+    assert_eq!(quoted, unquoted);
+    assert_eq!(quoted, "Hello, Devajyoti Sarkar!\n");
+}
+
+/// Joining collapses to a single space between each argument.
+#[test]
+fn single_empty_argument_still_greets_with_empty_name() {
+    assert_eq!(run(&[""]), "Hello, !\n");
 }
 
 /// Mixed scripts, accents, and emoji survive the full trip through the real

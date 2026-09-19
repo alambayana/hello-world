@@ -2,11 +2,14 @@
 //!
 //! Usage:
 //! ```text
-//! hello-world            -> "Hello, world!"
-//! hello-world <name>     -> "Hello, <name>!"
+//! hello-world                    -> "Hello, world!"
+//! hello-world <name>             -> "Hello, <name>!"
+//! hello-world <word> <word> ...  -> "Hello, <word> <word> ...!"
 //! ```
 //!
-//! If more than one argument is given, only the first one is used.
+//! All arguments are joined with a single space, so unquoted multi-word
+//! names work the same as quoted ones: `hello-world Devajyoti Sarkar` and
+//! `hello-world "Devajyoti Sarkar"` produce identical output.
 //! The name is embedded **verbatim** — the program performs no escaping,
 //! normalization, or truncation, and outputs valid UTF-8 as long as the
 //! input argument is.
@@ -31,15 +34,18 @@ fn greeting(name: Option<&str>) -> String {
     }
 }
 
-/// Entry point: reads the first CLI argument (if any) and prints the greeting.
+/// Entry point: collects all CLI arguments, joins them with a single space,
+/// and prints the greeting.
 ///
 /// Uses `args_os()` rather than `args()` so that a non-UTF-8 argument (only
 /// possible on Unix) is treated as "no argument" instead of panicking —
 /// recent Rust versions panic in `env::args()` when handed invalid UTF-8.
 fn main() {
-    let name = std::env::args_os()
-        .nth(1)
-        .and_then(|arg| arg.into_string().ok());
+    let args: Vec<String> = std::env::args_os()
+        .skip(1)
+        .filter_map(|arg| arg.into_string().ok())
+        .collect();
+    let name = (!args.is_empty()).then(|| args.join(" "));
     println!("{}", greeting(name.as_deref()));
 }
 
