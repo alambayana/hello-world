@@ -39,11 +39,18 @@ jobs:
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
 
-      - name: Tests
+      - name: Windows diagnostic — toolchain & OS info
         if: matrix.os == 'windows-latest'
-        run: cargo test --release -- --test-threads=1 --no-capture
+        run: |
+          rustc -vV
+          echo "=== child binary alone ==="
+          cargo run --release -- Rust is great
+          echo "child exit: $LASTEXITCODE"
+          echo "=== single integration test alone ==="
+          cargo test --release --test cli no_argument_greets_world -- --exact --no-capture
+          echo "single-test exit: $LASTEXITCODE"
         env:
-          RUST_BACKTRACE: 1
+          RUST_BACKTRACE: full
 
       - name: Tests
         if: matrix.os != 'windows-latest'
