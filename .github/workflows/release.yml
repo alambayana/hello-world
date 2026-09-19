@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    # bash on every runner keeps the scripts portable (the default pwsh
+    # shell on Windows cannot parse bash syntax).
+    shell: bash
+
+jobs:
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Create release from tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists; keeping it."
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --notes "Prebuilt binaries for ${GITHUB_REF_NAME}. See CHANGELOG.md and the README." \
+              --verify-tag
+          fi
+
+  build:
+    name: Build on ${{ matrix.os }}
+    needs: release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Upload binary to release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Name each asset with the actual target triple so the Linux,
+          # macOS, and Windows binaries never collide in the asset list.
+          target="$(rustc -vV | awk '/^host:/{print $2}')"
+          bin="hello-world-${target}"
+          case "$target" in
+            *windows*) bin="${bin}.exe" ;;
+          esac
+          gh release upload "$GITHUB_REF_NAME" "target/release/${bin}" --clobber
+          echo "Uploaded ${bin}"
