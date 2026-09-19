@@ -3,5 +3,12 @@ name = "hello-world"
 version = "0.1.0"
 edition = "2024"
 description = "Greets a name given as a CLI argument, or 'world' when no argument is given."
+authors = ["Devajyoti Sarkar <alambayana@gmail.com>"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/alambayana/hello-world"
+homepage = "https://github.com/alambayana/hello-world"
+keywords = ["cli", "greeting", "unicode", "no-dependencies"]
+categories = ["command-line-utilities"]
+readme = "README.md"
 
 [dependencies]

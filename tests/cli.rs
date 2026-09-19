@@ -58,10 +58,10 @@ fn extra_arguments_are_joined_with_spaces() {
 /// the whole point of the join behaviour.
 #[test]
 fn quoted_and_unquoted_multi_word_names_match() {
-    let quoted = run(&["Devajyoti Sarkar"]);
-    let unquoted = run(&["Devajyoti", "Sarkar"]);
+    let quoted = run(&["Rust is great"]);
+    let unquoted = run(&["Rust", "is", "great"]);
     assert_eq!(quoted, unquoted);
-    assert_eq!(quoted, "Hello, Devajyoti Sarkar!\n");
+    assert_eq!(quoted, "Hello, Rust is great!\n");
 }
 
 /// A lone empty argument yields the "there" greeting.

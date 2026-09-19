@@ -8,14 +8,14 @@ think of.
 
 ```text
 hello-world                    →  Hello, world!
-hello-world Devajyoti          →  Hello, Devajyoti!
-hello-world Devajyoti Sarkar   →  Hello, Devajyoti Sarkar!
+hello-world Alambayana         →  Hello, Alambayana!
+hello-world Rust is great      →  Hello, Rust is great!
 hello-world ""                 →  Hello, there!
 ```
 
 - Multiple arguments are joined with a single space, so unquoted names work
-  just like quoted ones: `hello-world Devajyoti Sarkar` and
-  `hello-world "Devajyoti Sarkar"` produce identical output.
+  just like quoted ones: `hello-world Rust is great` and
+  `hello-world "Rust is great"` produce identical output.
 - Empty-string arguments are ignored; if nothing usable remains, you get
   `Hello, there!`.
 - The name is echoed **verbatim** — no escaping, normalization, or
@@ -28,7 +28,7 @@ Requires a recent Rust toolchain (edition 2024):
 
 ```sh
 cargo run                  # Hello, world!
-cargo run -- Devajyoti     # Hello, Devajyoti!
+cargo run -- Alambayana    # Hello, Alambayana!
 cargo run -- Rust is great # Hello, Rust is great!
 ```
 
@@ -48,6 +48,15 @@ src/main.rs    # ~70 lines: greeting(), name_from_args(), main() + unit tests
 tests/cli.rs   # integration tests that drive the real binary
 docs/design.md # why each behaviour is the way it is
 ```
+
+## License
+
+Dual-licensed under either of:
+
+- MIT License (see [LICENSE-MIT](LICENSE-MIT))
+- Apache License, Version 2.0 (see [LICENSE-APACHE-2.0](LICENSE-APACHE-2.0))
+
+at your option.
 
 ## Further reading
 

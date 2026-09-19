@@ -26,8 +26,8 @@ Non-normative guarantees:
 ### 1. Joining multiple arguments (`echo`-style)
 
 The most common way to greet a full name is to forget the quotes. Joining
-all arguments with a space means `hello-world Devajyoti Sarkar` and
-`hello-world "Devajyoti Sarkar"` are identical, so the common mistake
+all arguments with a space means `hello-world Rust is great` and
+`hello-world "Rust is great"` are identical, so the common mistake
 isn't an error. We considered *rejecting* extra arguments (the strict-CLI
 convention, right for tools where extra args usually signal a real mistake
 like `git push`), but for a greeting there's no meaningful difference
@@ -64,7 +64,7 @@ On Unix, command-line arguments are byte strings and may not be valid
 UTF-8. When one argument fails validation:
 
 - **The whole batch is discarded**, not just the broken argument. A
-  partially broken name (`hello-world Deva\uFFjyoti <garble>`) would be
+  partially broken name (`hello-world Ru\uFFst <garble>`) would be
   half-greeted, which could mask a corrupted or maliciously crafted input.
   All-or-nothing is easier to reason about and to document.
 - **The result is `there`, not `world`** — see §2: input was attempted.

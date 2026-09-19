@@ -10,8 +10,8 @@
 //!
 //! Behaviour contract:
 //! * All arguments are joined with a single space, so unquoted multi-word
-//!   names work the same as quoted ones: `hello-world Devajyoti Sarkar` and
-//!   `hello-world "Devajyoti Sarkar"` produce identical output.
+//!   names work the same as quoted ones: `hello-world Rust is great` and
+//!   `hello-world "Rust is great"` produce identical output.
 //! * Empty-string arguments are ignored; if the remaining name is empty
 //!   (i.e. only empty arguments were given), the greeting is "Hello, there!".
 //! * If *any* argument is not valid UTF-8 (only possible on Unix), nothing
@@ -90,15 +90,15 @@ mod tests {
     /// A single name is greeted as-is.
     #[test]
     fn greets_the_given_name() {
-        assert_eq!(greeting(Some("Devajyoti")), "Hello, Devajyoti!");
+        assert_eq!(greeting(Some("Alambayana")), "Hello, Alambayana!");
     }
 
     /// Names with spaces are preserved in the greeting.
     #[test]
     fn greets_multi_word_names() {
         assert_eq!(
-            greeting(Some("Devajyoti Sarkar")),
-            "Hello, Devajyoti Sarkar!"
+            greeting(Some("Rust is great")),
+            "Hello, Rust is great!"
         );
     }
 
@@ -158,15 +158,15 @@ mod tests {
     /// A single argument is used as-is.
     #[test]
     fn single_arg_is_used_verbatim() {
-        assert_eq!(name_from_args(&args(&["Devajyoti"])), Some("Devajyoti".into()));
+        assert_eq!(name_from_args(&args(&["Alambayana"])), Some("Alambayana".into()));
     }
 
     /// Multiple arguments are joined with a single space.
     #[test]
     fn args_are_joined_with_single_spaces() {
         assert_eq!(
-            name_from_args(&args(&["Devajyoti", "Sarkar"])),
-            Some("Devajyoti Sarkar".into())
+            name_from_args(&args(&["Rust", "ace"])),
+            Some("Rust ace".into())
         );
     }
 
