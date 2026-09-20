@@ -58,6 +58,44 @@ Releases follow [Semantic Versioning](https://semver.org/):
 4. The `Release` workflow creates the GitHub release and attaches
    prebuilt binaries for Linux, macOS, and Windows automatically.
 
+## AI-assisted contributions (required)
+
+If AI assistance was used in a contribution, declare it in the pull
+request. This is a brand standard for all `alambayana` repositories:
+disclosure is required, and **"no AI used" is a valid, explicit answer**.
+
+### Categories
+
+Check every category in which AI assistance was used:
+
+| Category | Covers |
+|---|---|
+| **Implementation** | Source code: features, bug fixes, refactors, generated code |
+| **Testing** | Test cases, test strategy, property tables, debugging failures |
+| **Documentation** | README, design docs, doc comments, changelog |
+| **Review & debugging** | Code review, bug hunting, CI/performance work, architecture discussion |
+
+### What to report
+
+- **Model(s)**: one canonical identifier per model —
+  `Family-Size (quantization)` — for example
+  `Qwen3.8-27B (Unsloth UD-Q6_K_XL quantization)`. Name every model
+  involved, including models used only for review.
+- **Nature of assistance**: what the model(s) actually did — drafted,
+  generated, reviewed, debugged — and over which files or functions.
+
+### Where
+
+- **Pull request** — the required, per-contribution declaration (see the
+  PR template). The PR is the unit of review, so disclosure travels
+  with it.
+- **README** — a project-level "AI assistance" summary, maintained by
+  the maintainer and refreshed at each release, describing the current
+  state of the codebase.
+- **Not** per commit (history stays clean), **not** in package metadata
+  such as `Cargo.toml` (disclosure is an audit concern, not a build
+  concern), and **not** on issues (requests, not code contributions).
+
 ## Code of conduct
 
 Interactions in this project — issues, pull requests, discussions — are

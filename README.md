@@ -51,6 +51,17 @@ tests/cli.rs   # integration tests that drive the real binary
 docs/design.md # why each behaviour is the way it is
 ```
 
+## AI assistance
+
+This project was developed with **extensive AI assistance**: the
+implementation, test suite, documentation, and CI/release pipeline were
+drafted and refined in collaboration with an AI coding agent
+(`Qwen3.8-27B`, Unsloth `UD-Q6_K_XL` quantization), with human direction,
+review, and sign-off at every step.
+
+All contributions — including the original — follow the AI-assistance
+declaration standard in [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## License
 
 Dual-licensed under either of:

@@ -13,7 +13,7 @@ standards, and the same professional finish.
 
 | File | Purpose | Customize per repo |
 |---|---|---|
-| `README.md` | Usage, examples, badges, project layout, link to design notes | Everything |
+| `README.md` | Usage, examples, badges, project layout, link to design notes, "AI assistance" summary | Everything |
 | `CONTRIBUTING.md` | Setup, verification bar, PR and commit conventions, release process | Repo URL, toolchain, test count |
 | `CODE_OF_CONDUCT.md` | Contributor Covenant v2.1 — **use verbatim** | Contact line only |
 | `SECURITY.md` | Supported versions, private reporting channel, response timeline | Version table, scope notes |
@@ -22,7 +22,7 @@ standards, and the same professional finish.
 | `.github/workflows/ci.yml` | fmt, clippy, test, rustdoc on 3 OSes, warnings denied | Job names (must match branch-protection check names) |
 | `.github/workflows/release.yml` | Tag-triggered release + prebuilt binaries for 3 OSes | Binary name(s) in the upload step |
 | `.github/ISSUE_TEMPLATE/` | Bug form (with platform dropdown + contract checkbox), feature form, config | Contact link in `config.yml` |
-| `.github/PULL_REQUEST_TEMPLATE.md` | Change type + checklist mirroring the CI gates | Toolchain-specific commands |
+| `.github/PULL_REQUEST_TEMPLATE.md` | Change type, CI-gate checklist, required AI-assistance declaration | Toolchain-specific commands |
 | `docs/design.md` | Behaviour contract, design decisions, contract→test map | Everything |
 | `.gitignore` | Build artifacts + editor noise | Per language |
 
@@ -55,6 +55,29 @@ day-to-day use carries the public handle:
 
 Rationale: legal attribution must be real; public-surface indexing
 should be minimal and consistent.
+
+## AI assistance disclosure
+
+All `alambayana` repositories use the same disclosure standard, defined
+in `CONTRIBUTING.md` ("AI-assisted contributions") and enforced by the
+PR template:
+
+- **Four categories**: implementation, testing, documentation, review
+  & debugging.
+- **What**: a canonical model identifier per model —
+  `Family-Size (quantization)`, e.g.
+  `Qwen3.8-27B (Unsloth UD-Q6_K_XL quantization)` — for every model
+  involved (including review-only use), plus the nature of the
+  assistance (drafted / generated / reviewed / debugged) and its scope
+  (files or functions).
+- **Where**: per contribution in the **pull request** (required; "no AI
+  used" is an explicit, valid answer) and per project as a README
+  "AI assistance" summary maintained at release time. **Not** per
+  commit, **not** in package metadata such as `Cargo.toml`, **not** on
+  issues.
+- A repository built without AI says so explicitly in its README
+  summary — absence of a declaration is not the same as a declaration
+  of absence.
 
 ## CI, releases, and protection
 

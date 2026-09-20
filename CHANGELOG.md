@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- AI-assistance disclosure standard: every contribution declares the
+  categories of AI assistance used (implementation, testing,
+  documentation, review & debugging), the exact model(s) and
+  quantization, and the nature of the assistance — in the pull request
+  (required) and as a project-level README summary
+
 ## [0.1.0] - 2026-09-19
 
 ### Added
