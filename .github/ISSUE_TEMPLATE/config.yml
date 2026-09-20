@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Design decisions & behaviour contract
+    url: https://github.com/alambayana/hello-world/blob/main/docs/design.md
+    about: Check the documented contract before reporting a bug — many surprises are deliberate.

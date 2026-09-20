@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a new behaviour or capability
+labels: [enhancement]
+title: "[feature]: "
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear, concise description of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does it solve? What would be awkward without it?
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: The exact behaviour you expect, with example invocations and outputs.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: This fits the project's spirit (a tiny, well-documented hello CLI).
+          required: true

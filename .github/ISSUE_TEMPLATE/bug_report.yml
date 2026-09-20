@@ -1,0 +1,67 @@
+name: Bug report
+description: Something behaves differently from the documented contract
+labels: [bug]
+title: "[bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before reporting, please check the
+        [behaviour contract](https://github.com/alambayana/hello-world/blob/main/docs/design.md)
+        — some surprising behaviours (for example `hello-world ""` saying
+        `Hello, there!`) are deliberate and documented.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The git tag or commit you are testing (e.g. `v0.1.0`).
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Linux (x86-64)
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows (x86-64)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Exact command
+      description: The full command line you ran, including every argument.
+      placeholder: hello-world "" Rust
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual output
+      description: What happened, exactly (include the exit code if relevant).
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output
+      description: What you expected, and which part of the documented contract says so.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Anything else — how you built it, your environment, etc.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have checked the behaviour contract in `docs/design.md` and this is not documented behaviour.
+          required: true
+        - label: I am reporting one issue, not several.
+          required: true
